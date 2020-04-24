@@ -30,11 +30,7 @@ const remove = (id) => {
 
 const update = (id, newContact) => {
 	const req = axios.put(`${baseUrl}/${id}`, newContact)
-  return req
-  	.then(res => res.data)
-	  .catch(err => {
-	    console.log(err);
-	  });
+  return req.then(res => res.data);
 }
 
 export default { 

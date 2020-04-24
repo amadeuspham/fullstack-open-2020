@@ -1,5 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import phoneService from './services/phonebook';
+import './App.css'
+
+const Notification = ({ message, status }) => {
+  if (message === null) {
+    return null
+  }
+
+  return (
+    <div className={status}>
+      {message}
+    </div>
+  )
+}
 
 const Person = ({person, handleRemove}) => {
   return (
@@ -76,11 +89,17 @@ const App = () => {
     filtering: false,
   })
   const [ filteredContacts, setFilteredContacts ] = useState([])
+  const [successMessage, setSuccessMessage] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null)
 
   useEffect(() => {
     phoneService
       .getAll()
       .then(persons => setPersons(persons))
+      .catch(err => {
+        setErrorMessage(`Enable to fetch contacts`)
+        setTimeout(() => {setErrorMessage(null)}, 5000)
+      })
   }, [])
 
   const findExisting = (persons, checkPerson) => {
@@ -101,7 +120,20 @@ const App = () => {
       if (willReplace) {
         phoneService
           .update(existing.id, person)
-          .then(newContact => setPersons(persons.map(person => person.id !== existing.id ? person : newContact)))
+          .then(newContact => {
+            setPersons(persons.map(person => person.id !== existing.id ? person : newContact))
+            setNewName('')
+            setNewPhone('')
+            setSuccessMessage(`Updated ${person.name}'s number`)
+            setTimeout(() => {setSuccessMessage(null)}, 5000)
+          })
+          .catch(err => {
+            setErrorMessage(`Info about ${person.name} was already removed`)
+            setTimeout(() => {setErrorMessage(null)}, 5000)
+            setNewName('')
+            setNewPhone('')
+            setPersons(persons.filter(remainingPerson => remainingPerson.name !== person.name))
+          })
       } else {
         return;
       }
@@ -115,6 +147,12 @@ const App = () => {
           setPersons(persons.concat(returnedPerson))
           setNewName('')
           setNewPhone('')
+          setSuccessMessage(`Added ${person.name}`)
+          setTimeout(() => {setSuccessMessage(null)}, 5000)
+        })
+        .catch(err => {
+          setErrorMessage(`Unable to add ${person.name} to phonebook`)
+          setTimeout(() => {setErrorMessage(null)}, 5000)
         })
     }
   }
@@ -137,7 +175,15 @@ const App = () => {
     if (willDelete) {
       phoneService
         .remove(id)
-        .then(res => setPersons(persons.filter(person => person.id !== id)))
+        .then(res => {
+          setPersons(persons.filter(person => person.id !== id))
+          setSuccessMessage(`Removed ${name}`)
+          setTimeout(() => {setSuccessMessage(null)}, 5000)
+        })
+        .catch(err => {
+          setErrorMessage(`Unable to delete ${name}`)
+          setTimeout(() => {setErrorMessage(null)}, 5000)
+        })
     } else {
       return;
     }
@@ -146,6 +192,8 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={successMessage} status='success'/>
+      <Notification message={errorMessage} status='error'/>
       <FilterBar filterStatus={filterStatus} setFilterStatus={setFilterStatus} filterByName={filterByName}/>
       <h2>Add a new contact</h2>
       <PersonForm 

@@ -1,18 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import phoneService from './services/phonebook';
 
-const Person = ({name, number}) => {
+const Person = ({person, handleRemove}) => {
   return (
-    <p>{name}: {number}</p>
+    <p>
+    {person.name}: {person.number} 
+    <button onClick={() => handleRemove(person.id, person.name)}>remove</button>
+    </p>
   );
 }
 
-const Persons = ({filtering, filteredContacts, persons}) => {
+const Persons = ({filtering, filteredContacts, persons, handleRemove}) => {
   return (
     <div>
       {filtering 
-        ? filteredContacts.map(person => <Person key={person.name} name={person.name} number={person.number}/>)
-        : persons.map(person => <Person key={person.name} name={person.name} number={person.number}/>)
+        ? filteredContacts.map(person => 
+          <Person key={person.name} person={person} handleRemove={handleRemove}/>
+        )
+        : persons.map(person => 
+          <Person key={person.name} person={person} handleRemove={handleRemove}/>
+        )
       }
     </div>
   );
@@ -61,7 +68,7 @@ const PersonForm = (props) => {
 }
 
 const App = () => {
-  const [persons, setPersons] = useState([])
+  const [ persons, setPersons ] = useState([])
   const [ newName, setNewName ] = useState('')
   const [ newPhone, setNewPhone ] = useState('')
   const [ filterStatus, setFilterStatus ] = useState({
@@ -71,9 +78,9 @@ const App = () => {
   const [ filteredContacts, setFilteredContacts ] = useState([])
 
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => setPersons(response.data))
+    phoneService
+      .getAll()
+      .then(persons => setPersons(persons))
   }, [])
 
   const findExisting = (persons, checkPerson) => {
@@ -82,24 +89,38 @@ const App = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    const nameObject = {
+    const person = {
       name: newName,
       number: newPhone,
     }
 
-    const existing = findExisting(persons, nameObject)
+    const existing = findExisting(persons, person)
 
     if (existing) {
-      window.alert(`${newName} is already added to phonebook`);
+      const willReplace = window.confirm(`${newName} already exists. Do you want to replace the current phone number?`);
+      if (willReplace) {
+        phoneService
+          .update(existing.id, person)
+          .then(newContact => setPersons(persons.map(person => person.id !== existing.id ? person : newContact)))
+      } else {
+        return;
+      }
     } else {
-      setPersons(persons.concat(nameObject))
+      setPersons(persons.concat(person))
       setNewName('')
       setNewPhone('')
+      phoneService
+        .create(person)
+        .then(returnedPerson => {
+          setPersons(persons.concat(returnedPerson))
+          setNewName('')
+          setNewPhone('')
+        })
     }
   }
 
   const filterByName = (nameInput) => {
-    const filtered = persons.filter(person => person.name.includes(nameInput))
+    const filtered = persons.filter(person => person.name.toLowerCase().includes(nameInput.toLowerCase()))
     setFilteredContacts(filtered);
   }
 
@@ -109,6 +130,17 @@ const App = () => {
 
   const handlePhoneChange = (event) => {
     setNewPhone(event.target.value);
+  }
+
+  const handleRemove = (id, name) => {
+    const willDelete = window.confirm(`Are you sure you want to delete ${name}?`);
+    if (willDelete) {
+      phoneService
+        .remove(id)
+        .then(res => setPersons(persons.filter(person => person.id !== id)))
+    } else {
+      return;
+    }
   }
 
   return (
@@ -124,7 +156,12 @@ const App = () => {
         handlePhoneChange={handlePhoneChange}
       />
       <h2>Numbers</h2>
-      <Persons filtering={filterStatus.filtering} filteredContacts={filteredContacts} persons={persons}/>
+      <Persons 
+        filtering={filterStatus.filtering} 
+        filteredContacts={filteredContacts} 
+        persons={persons}
+        handleRemove={handleRemove}
+      />
     </div>
   )
 }

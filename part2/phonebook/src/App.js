@@ -138,9 +138,6 @@ const App = () => {
         return;
       }
     } else {
-      setPersons(persons.concat(person))
-      setNewName('')
-      setNewPhone('')
       phoneService
         .create(person)
         .then(returnedPerson => {
@@ -151,7 +148,7 @@ const App = () => {
           setTimeout(() => {setSuccessMessage(null)}, 5000)
         })
         .catch(err => {
-          setErrorMessage(`Unable to add ${person.name} to phonebook`)
+          setErrorMessage(err.response.data)
           setTimeout(() => {setErrorMessage(null)}, 5000)
         })
     }

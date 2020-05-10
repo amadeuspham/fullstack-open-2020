@@ -1,49 +1,30 @@
 import React, { useState } from 'react'
 
-import blogService from '../services/blogs'
-
-const BlogCreate = (props) => {
-  const { setErrorMessage, setSuccessMessage, addBlogToList } = props
-
+const BlogCreate = ({handleCreateBlog}) => {
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
   const [url, setUrl] = useState('')
 
-  const handleSubmitBlog = async (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
-    try {
-      const newBlog = await blogService.create({
-        title, author, url
-      })
-      setTitle('')
-      setAuthor('')
-      setUrl('')
-      props.toggleVisibility()
-      addBlogToList(newBlog)
-      setSuccessMessage(`New blog: ${newBlog.title} by ${newBlog.author} added`)
-      setTimeout(() => {
-        setSuccessMessage(null)
-      }, 5000)
-    } catch (exception) {
-      setErrorMessage('An error occured when trying to create new blog')
-      setTimeout(() => {
-        setErrorMessage(null)
-      }, 5000)
-    }
+    handleCreateBlog({title, author, url})
+    setTitle('')
+    setAuthor('')
+    setUrl('')
   }
 
-  return(
+  return (
     <div>
       <h2>Create new</h2>
-      <form onSubmit={handleSubmitBlog}>
+      <form onSubmit={handleSubmit}>
         <div>
-          title: <input value={title} onChange={({ target }) => setTitle(target.value)}/>
+          title: <input id='title' value={title} onChange={({ target }) => setTitle(target.value)}/>
         </div>
         <div>
-          author: <input value={author} onChange={({ target }) => setAuthor(target.value)} />
+          author: <input id='author' value={author} onChange={({ target }) => setAuthor(target.value)} />
         </div>
         <div>
-          url: <input value={url} onChange={({ target }) => setUrl(target.value)} />
+          url: <input id='url' value={url} onChange={({ target }) => setUrl(target.value)} />
         </div>
         <div>
           <button type="submit">create</button>

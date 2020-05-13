@@ -1,15 +1,14 @@
 const initialState = "We need to talk mate"
 
-export const addVotedNoti = (content) => {
-  return {
-    type: 'VOTED',
-    data: {content}
-  }
-}
-
-export const deleteNoti = () => {
-  return {
-    type: 'DELETE'
+export const addVotedNoti = (noti, timeout) => {
+  return async dispatch => {
+    dispatch({
+      type: 'VOTED',
+      data: {noti}
+    })
+    setTimeout(() => dispatch({
+      type: 'DELETE'  
+    }), timeout*1000)
   }
 }
 
@@ -18,7 +17,7 @@ const notificationReducer = (state = initialState, action) => {
   console.log('action', action)
   switch(action.type) {
     case 'VOTED':
-      return `You voted '${action.data.content}'`
+      return action.data.noti
     case 'DELETE': 
       return null
     default: return state;

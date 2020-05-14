@@ -1,12 +1,15 @@
 const initialState = "We need to talk mate"
 
+let timeoutID = null;
+
 export const addVotedNoti = (noti, timeout) => {
   return async dispatch => {
     dispatch({
       type: 'VOTED',
       data: {noti}
     })
-    setTimeout(() => dispatch({
+    clearTimeout(timeoutID)
+    timeoutID = setTimeout(() => dispatch({
       type: 'DELETE'  
     }), timeout*1000)
   }

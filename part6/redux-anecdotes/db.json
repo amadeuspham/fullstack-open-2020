@@ -38,7 +38,7 @@
     {
       "content": "another",
       "id": "14629",
-      "votes": 3
+      "votes": 6
     },
     {
       "content": "Shalala",
@@ -48,7 +48,17 @@
     {
       "content": "An anecdote",
       "id": "6643",
-      "votes": 5
+      "votes": 7
+    },
+    {
+      "content": "New",
+      "id": "5658",
+      "votes": 3
+    },
+    {
+      "content": "Test new ",
+      "id": "41266",
+      "votes": 4
     }
   ]
 }

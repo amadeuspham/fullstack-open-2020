@@ -92,7 +92,7 @@ const Authors = (props) => {
         </tbody>
       </table>
       <br/>
-      <BirthdayForm setError={props.setError} authors={authors}/>
+      {props.token && <BirthdayForm setError={props.setError} authors={authors}/>}
     </div>
   )
 }

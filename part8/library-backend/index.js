@@ -1,10 +1,12 @@
-const { ApolloServer, UserInputError, AuthenticationError, gql } = require('apollo-server')
+const { ApolloServer, UserInputError, AuthenticationError, PubSub, gql } = require('apollo-server')
 const mongoose = require('mongoose')
 const jwt = require('jsonwebtoken')
 
 const Book = require('./models/Book')
 const Author = require('./models/Author')
 const User = require('./models/User')
+
+const pubsub = new PubSub()
 
 const JWT_SECRET = 'LONDON_BRIDGE'
 const PASSWORD = 'defaultpassword'
@@ -74,6 +76,10 @@ const typeDefs = gql`
       password: String!
     ): Token
   }
+
+  type Subscription {
+    bookAdded: Book!
+  }    
 `
 
 const resolvers = {
@@ -94,7 +100,7 @@ const resolvers = {
         return Book.find({author: args.author, genres: { $in: args.genre }})
       }
     },
-    allAuthors: () => Author.find({})
+    allAuthors: () => Author.find({}).populate('books'),
   },
 
   Mutation: {
@@ -120,12 +126,15 @@ const resolvers = {
       const book = new Book({ ...args, author: authorObj._id })
       try {
         await book.save()
+        await Author.findByIdAndUpdate(authorObj._id, {$push: {books: book}})
       } catch(e) {
         throw new UserInputError(e.message, {
           invalidArgs: args,
         })
         console.log(e);
       }
+
+      pubsub.publish('BOOK_ADDED', { bookAdded: book })
 
       return book
     },
@@ -182,9 +191,15 @@ const resolvers = {
     },
   },
 
+  Subscription: {
+    bookAdded: {
+      subscribe: () => pubsub.asyncIterator(['BOOK_ADDED'])
+    },
+  },
+
   Author: {
     bookCount: (root) => {
-      return Book.find({author: root._id}).countDocuments()
+      return root.books.length
     }
   },
 
@@ -211,6 +226,7 @@ const server = new ApolloServer({
   },
 })
 
-server.listen().then(({ url }) => {
+server.listen().then(({ url, subscriptionsUrl }) => {
   console.log(`Server ready at ${url}`)
+  console.log(`Subscriptions ready at ${subscriptionsUrl}`)
 })

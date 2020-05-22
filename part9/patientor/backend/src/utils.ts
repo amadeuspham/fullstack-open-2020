@@ -46,7 +46,7 @@ const parseDate = (date: any): string => {
 
 const parseGender = (gender: any): Gender => {
   if (!gender || !isGender(gender)) {
-      throw new Error('Incorrect or missing gender: ' + weather)
+      throw new Error('Incorrect or missing gender: ' + gender)
   } 
   return gender;
 };

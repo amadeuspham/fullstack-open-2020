@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid';
+
 import patientsData from '../../data/patients';
 import { PatientEntry, NSSPatientEntry, NewPatientEntry } from "../types";
 
@@ -14,9 +16,8 @@ const getNSSEntries = (): Array<NSSPatientEntry> => {
 };
 
 const addEntry = (patientEntry: NewPatientEntry): PatientEntry => {
-
   const newPatient = {
-    id: Math.max(...patients.map(p => p.id)) + 1,
+    id: uuidv4(),
     ...patientEntry,
   }
   patients.push(newPatient)

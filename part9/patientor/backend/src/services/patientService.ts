@@ -1,7 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
-
 import patientsData from '../../data/patients';
-import { PatientEntry, NSSPatientEntry, NewPatientEntry } from "../types";
+import { PatientEntry, NSSPatientEntry, NewPatientEntry, Entry, NewEntry } from "../types";
 
 const patients: Array<PatientEntry> = patientsData as Array<PatientEntry>;
 
@@ -24,8 +23,23 @@ const addEntry = (patientEntry: NewPatientEntry): PatientEntry => {
   return newPatient;
 };
 
+const addEntryToPatient = (entry: NewEntry, patientId: string) => {
+  const newEntry = {
+    id: uuidv4(),
+    ...entry,
+  } as Entry;
+  const editingPatient = patients.find(p => p.id === patientId)
+  if (editingPatient) {
+    editingPatient.entries = [...editingPatient.entries, newEntry];
+    return newEntry
+  } else {
+    return null
+  }
+}
+
 export default {
   getEntries,
   getNSSEntries,
   addEntry,
+  addEntryToPatient,
 };

@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@types/semantic-ui": "^2.2.7",
     "axios": "^0.19.0",
     "formik": "^2.0.6",
     "react": "^16.11.0",
